@@ -24,6 +24,7 @@ import (
 	"time"
 
 	"github.com/coreos/etcd-operator/pkg/analytics"
+	"github.com/coreos/etcd-operator/pkg/backup/abs/absconfig"
 	"github.com/coreos/etcd-operator/pkg/backup/s3/s3config"
 	"github.com/coreos/etcd-operator/pkg/cluster"
 	"github.com/coreos/etcd-operator/pkg/spec"
@@ -78,6 +79,7 @@ type Config struct {
 	ServiceAccount string
 	PVProvisioner  string
 	s3config.S3Context
+	absconfig.ABSContext
 	KubeCli kubernetes.Interface
 }
 
@@ -93,6 +95,11 @@ func (c *Config) Validate() error {
 	if !(allEmpty || allSet) {
 		return errors.New("AWS/S3 related configs should be all set or all empty")
 	}
+
+	if err := c.ABSContext.Validate(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -117,6 +124,13 @@ func (c *Controller) Run() error {
 		// AWS config/creds should be initialized only once here.
 		// It will be shared and used by potential cluster's S3 backup manager to manage storage on operator side.
 		err := setupS3Env(c.Config.KubeCli, c.Config.S3Context, c.Config.Namespace)
+		if err != nil {
+			return err
+		}
+	} else if len(c.Config.ABSSecret) != 0 {
+		// ABS creds should be initialized only once here.
+		// It will be shared and used by potential cluster's ABS backup manager to manage storage on operator side.
+		err := setupABSEnv(c.Config.KubeCli, c.Config.ABSContext, c.Config.Namespace)
 		if err != nil {
 			return err
 		}
@@ -229,6 +243,7 @@ func (c *Controller) findAllClusters() (string, error) {
 		clus.Spec.Cleanup()
 
 		stopC := make(chan struct{})
+
 		nc := cluster.New(c.makeClusterConfig(), &clus, stopC, &c.waitCluster)
 		c.stopChMap[clus.Metadata.Name] = stopC
 		c.clusters[clus.Metadata.Name] = nc
@@ -243,8 +258,8 @@ func (c *Controller) makeClusterConfig() cluster.Config {
 		PVProvisioner:  c.PVProvisioner,
 		ServiceAccount: c.Config.ServiceAccount,
 		S3Context:      c.S3Context,
-
-		KubeCli: c.KubeCli,
+		ABSContext:     c.ABSContext,
+		KubeCli:        c.KubeCli,
 	}
 }
 

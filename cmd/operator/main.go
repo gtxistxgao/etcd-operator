@@ -25,6 +25,7 @@ import (
 	"time"
 
 	"github.com/coreos/etcd-operator/pkg/analytics"
+	"github.com/coreos/etcd-operator/pkg/backup/abs/absconfig"
 	"github.com/coreos/etcd-operator/pkg/backup/s3/s3config"
 	"github.com/coreos/etcd-operator/pkg/chaos"
 	"github.com/coreos/etcd-operator/pkg/controller"
@@ -57,6 +58,8 @@ var (
 	awsSecret        string
 	awsConfig        string
 	s3Bucket         string
+	absSecret        string
+	absContainer     string
 	listenAddr       string
 	gcInterval       time.Duration
 
@@ -81,6 +84,9 @@ func init() {
 	flag.StringVar(&awsConfig, "backup-aws-config", "",
 		"The name of the kube configmap object that stores the AWS config file. The file name must be 'config'.")
 	flag.StringVar(&s3Bucket, "backup-s3-bucket", "", "The name of the AWS S3 bucket to store backups in.")
+	flag.StringVar(&absSecret, "backup-abs-secret", "",
+		"The name of the kube secret object that stores the ABS credentials.")
+	flag.StringVar(&absContainer, "backup-abs-container", "", "The name of the ABS container to store backups in.")
 	flag.StringVar(&listenAddr, "listen-addr", "0.0.0.0:8080", "The address on which the HTTP server will listen to")
 	// chaos level will be removed once we have a formal tool to inject failures.
 	flag.IntVar(&chaosLevel, "chaos-level", -1, "DO NOT USE IN PRODUCTION - level of chaos injected into the etcd clusters created by the operator.")
@@ -212,6 +218,10 @@ func newControllerConfig() controller.Config {
 			AWSSecret: awsSecret,
 			AWSConfig: awsConfig,
 			S3Bucket:  s3Bucket,
+		},
+		ABSContext: absconfig.ABSContext{
+			ABSSecret:    absSecret,
+			ABSContainer: absContainer,
 		},
 		KubeCli: kubecli,
 	}

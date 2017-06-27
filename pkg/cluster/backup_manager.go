@@ -42,6 +42,7 @@ const (
 var (
 	errNoPVForBackup       = errors.New("no backup could be created due to PVProvisioner (none) is set")
 	errNoS3ConfigForBackup = errors.New("no backup could be created due to S3 configuration not set")
+	errNoABSCredsForBackup = errors.New("no backup could be created due to ABS credentials not set")
 )
 
 type backupManager struct {
@@ -86,6 +87,11 @@ func (bm *backupManager) setupStorage() (s backupstorage.Storage, err error) {
 			return nil, errNoS3ConfigForBackup
 		}
 		s, err = backupstorage.NewS3Storage(c.S3Context, c.KubeCli, cl.Metadata.Name, cl.Metadata.Namespace, *b)
+	case spec.BackupStorageTypeABS:
+		if len(c.ABSContext.ABSSecret) == 0 && b.ABS == nil {
+			return nil, errNoABSCredsForBackup
+		}
+		s, err = backupstorage.NewABSStorage(c.ABSContext, c.KubeCli, cl.Metadata.Name, cl.Metadata.Namespace, *b)
 	}
 	return s, err
 }
@@ -158,6 +164,12 @@ func (bm *backupManager) makeSidecarDeployment() *appsv1beta1.Deployment {
 			k8sutil.AttachS3ToPodSpec(&podTemplate.Spec, *ss)
 		} else {
 			k8sutil.AttachOperatorS3ToPodSpec(&podTemplate.Spec, c.S3Context)
+		}
+	case spec.BackupStorageTypeABS:
+		if ws := cl.Spec.Backup.ABS; ws != nil {
+			k8sutil.AttachABSToPodSpec(&podTemplate.Spec, *ws)
+		} else {
+			k8sutil.AttachOperatorABSToPodSpec(&podTemplate.Spec, c.ABSContext)
 		}
 	}
 	name := k8sutil.BackupSidecarName(cl.Metadata.Name)
