@@ -67,7 +67,7 @@ func (ab *absBackend) purge(maxBackupFiles int) error {
 		return err
 	}
 	bnames := filterAndSortBackups(names)
-	logrus.Info("found %d backups from backend azure blob storage")
+	logrus.Infof("found %d backups from backend azure blob storage", len(bnames))
 	if len(bnames) < maxBackupFiles {
 		return nil
 	}
