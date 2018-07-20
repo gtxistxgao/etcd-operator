@@ -37,11 +37,11 @@ func NewABSStorage(kubecli kubernetes.Interface, clusterName, ns string, p spec.
 	prefix := path.Join(ns, clusterName)
 
 	abscli, err := func() (*backupabs.ABS, error) {
-		account, key, sas, err := setupABSCreds(kubecli, ns, p.ABS.ABSSecret)
+		account, key, sas, cloud, err := setupABSCreds(kubecli, ns, p.ABS.ABSSecret)
 		if err != nil {
 			return nil, err
 		}
-		return backupabs.New(p.ABS.ABSContainer, account, key, sas, prefix)
+		return backupabs.New(p.ABS.ABSContainer, account, key, sas, prefix, cloud)
 	}()
 	if err != nil {
 		return nil, err
@@ -83,13 +83,14 @@ func (a *abs) Delete() error {
 	return nil
 }
 
-func setupABSCreds(kubecli kubernetes.Interface, ns, secret string) (account, key, sas string, err error) {
+func setupABSCreds(kubecli kubernetes.Interface, ns, secret string) (account, key, sas, cloud string, err error) {
 	se, err := kubecli.CoreV1().Secrets(ns).Get(secret, metav1.GetOptions{})
 	if err != nil {
-		return "", "", "", err
+		return "", "", "", "", err
 	}
 	account = string(se.Data[spec.ABSStorageAccount])
 	key = string(se.Data[spec.ABSStorageKey])
 	sas = string(se.Data[spec.ABSAccountSASToken])
+	cloud = string(se.Data[spec.ABSCloud])
 	return
 }

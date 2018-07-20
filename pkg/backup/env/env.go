@@ -22,4 +22,5 @@ const (
 	ABSStorageAccount  = "AZURE_STORAGE_ACCOUNT"
 	ABSStorageKey      = "AZURE_STORAGE_KEY"
 	ABSAccountSASToken = "AZURE_STORAGE_ACCOUNT_SAS_TOKEN"
+	ABSCloud           = "AZURE_CLOUD"
 )

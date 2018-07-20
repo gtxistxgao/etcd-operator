@@ -33,6 +33,8 @@ const (
 	ABSStorageKey = "storage-key"
 	// ABSAccountSASToken defines the SAS token
 	ABSAccountSASToken = "storage-sas-token"
+	// ABSCloud defines the Azure cloud name
+	ABSCloud = "cloud"
 )
 
 var errPVZeroSize = errors.New("PV backup should not have 0 size volume")
