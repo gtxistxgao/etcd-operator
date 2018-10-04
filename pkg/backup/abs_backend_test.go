@@ -21,7 +21,9 @@ import (
 	"io/ioutil"
 	"os"
 	"reflect"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/Azure/azure-sdk-for-go/storage"
 	"github.com/coreos/etcd-operator/pkg/backup/abs"
@@ -71,6 +73,39 @@ func TestABSBackendContainerDoesNotExist(t *testing.T) {
 	}
 	if err.Error() != fmt.Sprintf("container %s does not exist", container) {
 		t.Fatal(err)
+	}
+}
+
+func TestABSBackendGetLatestWithActualData(t *testing.T) {
+
+	input := `v1/5b02a9edd757c500016b6ea2/etcd-5b02a9edd757c500016b6ea2/3.1.19_0000000000ed0981_etcd.backup	BlockBlob	Cool	1904672	application/octet-stream	2018-10-04T15:52:09+00:00
+v1/5b02a9edd757c500016b6ea2/etcd-5b02a9edd757c500016b6ea2/3.1.19_0000000000ed1e1c_etcd.backup	BlockBlob	Cool	2244640	application/octet-stream	2018-10-04T16:54:10+00:00
+v1/5b02a9edd757c500016b6ea2/etcd-5b02a9edd757c500016b6ea2/3.1.8_0000000000e95028_etcd.backup	BlockBlob	Cool	1523744	application/octet-stream	2018-10-02T12:09:08+00:00
+v1/5b02a9edd757c500016b6ea2/etcd-5b02a9edd757c500016b6ea2/3.1.8_0000000000e959d6_etcd.backup	BlockBlob	Cool	1863712	application/octet-stream	2018-10-02T12:41:09+00:00
+v1/5b02a9edd757c500016b6ea2/etcd-5b02a9edd757c500016b6ea2/3.1.8_0000000000e96381_etcd.backup	BlockBlob	Cool	1380384	application/octet-stream	2018-10-02T13:13:11+00:00
+v1/5b02a9edd757c500016b6ea2/etcd-5b02a9edd757c500016b6ea2/3.1.8_0000000000e96d2d_etcd.backup	BlockBlob	Cool	1716256	application/octet-stream	2018-10-02T13:45:12+00:00
+v1/5b02a9edd757c500016b6ea2/etcd-5b02a9edd757c500016b6ea2/3.1.8_0000000000e976e0_etcd.backup	BlockBlob	Cool	2068512	application/octet-stream	2018-10-02T14:17:18+00:00`
+
+	lines := strings.Split(input, "\n")
+	var blobs []storage.Blob
+	for _, line := range lines {
+		parts := strings.Split(line, "\t")
+		name := parts[0]
+		date, err := time.Parse("2006-01-02T15:04:05+00:00", parts[5])
+		if err != nil {
+			t.Errorf("Failed to parse date: %v", err)
+		}
+		blobs = append(blobs, storage.Blob{
+			Name: name,
+			Properties: storage.BlobProperties{
+				LastModified: storage.TimeRFC1123(date),
+			},
+		})
+	}
+
+	backupName := getLatestBackupNameByDate(blobs)
+	if "v1/5b02a9edd757c500016b6ea2/etcd-5b02a9edd757c500016b6ea2/3.1.19_0000000000ed1e1c_etcd.backup" != backupName {
+		t.Errorf("Found the wrong blob: %s", backupName)
 	}
 }
 
