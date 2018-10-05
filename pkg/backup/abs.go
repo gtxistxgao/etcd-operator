@@ -16,11 +16,8 @@ package backup
 
 import (
 	"fmt"
-	"github.com/Azure/azure-sdk-for-go/storage"
 	"io"
 	"io/ioutil"
-	"sort"
-	"time"
 
 	"github.com/coreos/etcd-operator/pkg/backup/abs"
 
@@ -52,26 +49,12 @@ func (ab *absBackend) save(version string, snapRev int64, r io.Reader) (int64, e
 }
 
 func (ab *absBackend) getLatest() (string, error) {
-	blobs, err := ab.ABS.AllBlobs()
+	keys, err := ab.ABS.List()
 	if err != nil {
 		return "", fmt.Errorf("failed to list abs container: %v", err)
 	}
 
-	return getLatestBackupNameByDate(blobs), nil
-}
-
-func getLatestBackupNameByDate(blobs []storage.Blob) string {
-	if len(blobs) == 0 {
-		return ""
-	}
-
-	sort.Slice(blobs, func(i, j int) bool {
-		t1 := time.Time(blobs[i].Properties.LastModified)
-		t2 := time.Time(blobs[j].Properties.LastModified)
-		return t1.UnixNano() < t2.UnixNano()
-	})
-
-	return blobs[len(blobs)-1].Name
+	return getLatestBackupName(keys), nil
 }
 
 func (ab *absBackend) open(name string) (io.ReadCloser, error) {

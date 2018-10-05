@@ -174,16 +174,6 @@ func (w *ABS) List() ([]string, error) {
 	return l, err
 }
 
-func (w *ABS) AllBlobs() ([]storage.Blob, error) {
-	params := storage.ListBlobsParameters{Prefix: path.Join(v1, w.prefix) + "/"}
-	resp, err := w.container.ListBlobs(params)
-	if err != nil {
-		return nil, err
-	}
-
-	return resp.Blobs, nil
-}
-
 func (w *ABS) list(prefix string) (int64, []string, error) {
 	params := storage.ListBlobsParameters{Prefix: path.Join(v1, prefix) + "/"}
 	resp, err := w.container.ListBlobs(params)

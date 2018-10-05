@@ -273,9 +273,9 @@ func (b *Backup) saveSnap(lastSnapRev int64) (int64, error) {
 		return lastSnapRev, nil
 	}
 
-	logrus.Infof("running defrag for cluster (%s)", b.clusterName)
+	logrus.Info("running defrag for cluster (%s)", b.clusterName)
 	if err := b.defrag(member); err != nil {
-		logrus.Errorf("defrag failed: %v", err)
+		logrus.Error("defrag failed: %v", err)
 	}
 
 	log.Printf("saving backup for cluster (%s)", b.clusterName)
