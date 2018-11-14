@@ -58,7 +58,7 @@ func etcdContainer(commands, baseImage, version string) v1.Container {
 	return c
 }
 
-func containerWithLivenessReadinessProbe(c v1.Container, lp *v1.Probe, rd *v1.Probe) v1.Container {
+func containerWithLivenessReadinessProbe(c v1.Container, lp *v1.Probe, rp *v1.Probe) v1.Container {
 	c.LivenessProbe = lp
 	c.ReadinessProbe = rp
 	return c
@@ -100,6 +100,8 @@ func etcdReadinessProbe(isSecure bool) *v1.Probe {
 	readinessProbe.TimeoutSeconds = 5
 	readinessProbe.PeriodSeconds = 5
 	readinessProbe.FailureThreshold = 6
+
+	return readinessProbe
 }
 
 func PodWithAntiAffinity(pod *v1.Pod, clusterName string) *v1.Pod {
