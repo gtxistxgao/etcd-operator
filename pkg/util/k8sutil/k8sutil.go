@@ -293,7 +293,10 @@ func NewEtcdPod(m *etcdutil.Member, initialCluster []string, clusterName, state,
 		// DNS entries might not warm up initially. 3.0.x etcd will exit without retrying.
 		commands = fmt.Sprintf("sleep 5; %s", commands)
 	}
-	container := containerWithLivenessProbe(etcdContainer(commands, cs.BaseImage, cs.Version), etcdLivenessProbe(cs.TLS.IsSecureClient()))
+	container := containerWithLivenessReadinessProbe(
+		etcdContainer(commands, cs.BaseImage, cs.Version),
+		etcdLivenessProbe(cs.TLS.IsSecureClient()),
+		etcdReadinessProbe(cs.TLS.IsSecureClient()))
 
 	if cs.Pod != nil {
 		container = containerWithRequirements(container, cs.Pod.Resources)
