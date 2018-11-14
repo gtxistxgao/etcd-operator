@@ -58,8 +58,9 @@ func etcdContainer(commands, baseImage, version string) v1.Container {
 	return c
 }
 
-func containerWithLivenessProbe(c v1.Container, lp *v1.Probe) v1.Container {
+func containerWithLivenessReadinessProbe(c v1.Container, lp *v1.Probe, rd *v1.Probe) v1.Container {
 	c.LivenessProbe = lp
+	c.ReadinessProbe = rp
 	return c
 }
 
@@ -68,8 +69,7 @@ func containerWithRequirements(c v1.Container, r v1.ResourceRequirements) v1.Con
 	return c
 }
 
-func etcdLivenessProbe(isSecure bool) *v1.Probe {
-	// etcd pod is alive only if a linearizable get succeeds.
+func etcdNewProbe(isSecure bool) *v1.Probe {
 	cmd := "ETCDCTL_API=3 etcdctl get foo"
 	if isSecure {
 		tlsFlags := fmt.Sprintf("--cert=%[1]s/%[2]s --key=%[1]s/%[3]s --cacert=%[1]s/%[4]s", operatorEtcdTLSDir, etcdutil.CliCertFile, etcdutil.CliKeyFile, etcdutil.CliCAFile)
@@ -86,6 +86,20 @@ func etcdLivenessProbe(isSecure bool) *v1.Probe {
 		PeriodSeconds:       60,
 		FailureThreshold:    3,
 	}
+}
+
+func etcdLivenessProbe(isSecure bool) *v1.Probe {
+	// etcd pod is alive only if a linearizable get succeeds.
+	return etcdNewProbe(isSecure)
+}
+
+func etcdReadinessProbe(isSecure bool) *v1.Probe {
+	// etcd pod is ready only if a linearizable get succeeds.
+	readinessProbe := etcdNewProbe(isSecure)
+	readinessProbe.InitialDelaySeconds = 1
+	readinessProbe.TimeoutSeconds = 5
+	readinessProbe.PeriodSeconds = 5
+	readinessProbe.FailureThreshold = 6
 }
 
 func PodWithAntiAffinity(pod *v1.Pod, clusterName string) *v1.Pod {
