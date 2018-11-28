@@ -99,6 +99,15 @@ type ClusterSpec struct {
 	// Paused is to pause the control of the operator for the etcd cluster.
 	Paused bool `json:"paused,omitempty"`
 
+	// Heartbeat timeout setting for etcd cluster
+	HeartbeatTimeout int `json:"heartbeatTimeout,omitempty"`
+
+	// Election timeout setting for etcd cluster
+	ElectionTimeout int `json:"electionTimeout,omitempty"`
+
+	// Snapshot count setting for etcd cluster
+	SnapshotCount int `json:"snapshotCount,omitempty"`
+
 	// Pod defines the policy to create pod for the etcd pod.
 	//
 	// Updating Pod does not take effect on any existing etcd pods.
