@@ -56,6 +56,7 @@ const (
 )
 
 const TolerateUnreadyEndpointsAnnotation = "service.alpha.kubernetes.io/tolerate-unready-endpoints"
+const defaultCurlImage = "tutum/curl"
 
 func GetEtcdVersion(pod *v1.Pod) string {
 	return pod.Annotations[etcdVersionAnnotationKey]
@@ -86,11 +87,16 @@ func HostPathFromMember(hp, memberName, namespace string) string {
 	return path.Join(hp, namespace, memberName)
 }
 
-func makeRestoreInitContainerSpec(backupAddr, token, baseImage, version string, m *etcdutil.Member) []v1.Container {
+func makeRestoreInitContainerSpec(backupAddr, token, baseImage, curlImage, version string, m *etcdutil.Member) []v1.Container {
+	image := defaultCurlImage
+	if curlImage != "" {
+		image = curlImage
+	}
+
 	return []v1.Container{
 		{
 			Name:  "fetch-backup",
-			Image: "tutum/curl",
+			Image: image,
 			Command: []string{
 				"/bin/sh", "-ec",
 				fmt.Sprintf("curl -o %s %s", backupFile, backupapi.NewBackupURL("http", backupAddr, version, -1)),
@@ -236,7 +242,7 @@ func AddEtcdVolumeToPod(pod *v1.Pod, pvc *v1.PersistentVolumeClaim, hostPath *v1
 
 func AddRecoveryToPod(pod *v1.Pod, clusterName, token string, m *etcdutil.Member, cs spec.ClusterSpec) {
 	pod.Spec.InitContainers =
-		makeRestoreInitContainerSpec(BackupServiceAddr(clusterName), token, cs.BaseImage, cs.Version, m)
+		makeRestoreInitContainerSpec(BackupServiceAddr(clusterName), token, cs.BaseImage, cs.CurlImage, cs.Version, m)
 }
 
 func addOwnerRefToObject(o metav1.Object, r metav1.OwnerReference) {
