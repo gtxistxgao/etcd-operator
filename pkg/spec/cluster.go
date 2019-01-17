@@ -86,6 +86,16 @@ type ClusterSpec struct {
 	// If image is not set, default is quay.io/coreos/etcd
 	BaseImage string `json:"baseImage"`
 
+	// BackupImage is the base image name that will be used to create backup pod
+	//
+	// If image is not set, default is IMAGE specified during build, see 'hack/build/operator/build'
+	BackupImage string `json:"backupImage"`
+
+	// CurlImage is used to fetch backup file during restoring.
+	//
+	// If image is not set, default is 'tutum/curl'
+	CurlImage string `json:"curlImage"`
+
 	// Version is the expected version of the etcd cluster.
 	// The etcd-operator will eventually make the etcd cluster version
 	// equal to the expected version.

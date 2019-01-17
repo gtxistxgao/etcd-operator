@@ -231,12 +231,17 @@ func NewBackupPodTemplate(clusterName, account string, sp spec.ClusterSpec) v1.P
 		panic("unexpected json error " + err.Error())
 	}
 
+	backupImage := BackupImage
+	if sp.BackupImage != "" {
+		backupImage = sp.BackupImage
+	}
+
 	ps := v1.PodSpec{
 		ServiceAccountName: account,
 		Containers: []v1.Container{
 			{
 				Name:  "backup",
-				Image: BackupImage,
+				Image: backupImage,
 				Command: []string{
 					"/usr/local/bin/etcd-backup",
 					"--etcd-cluster=" + clusterName,
