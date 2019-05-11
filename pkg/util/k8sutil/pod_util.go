@@ -21,7 +21,7 @@ import (
 	"github.com/coreos/etcd-operator/pkg/spec"
 	"github.com/coreos/etcd-operator/pkg/util/etcdutil"
 
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -152,6 +152,7 @@ func applyPodPolicy(clusterName string, pod *v1.Pod, policy *spec.PodPolicy) {
 	for i := range pod.Spec.Containers {
 		if pod.Spec.Containers[i].Name == "etcd" {
 			pod.Spec.Containers[i].Env = append(pod.Spec.Containers[i].Env, policy.EtcdEnv...)
+			pod.Spec.Containers[i].ImagePullPolicy = policy.ImagePullPolicy
 		}
 	}
 }

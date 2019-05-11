@@ -21,7 +21,7 @@ import (
 	"strings"
 	"time"
 
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -170,6 +170,13 @@ type PodPolicy struct {
 	// AntiAffinity determines if the etcd-operator tries to avoid putting
 	// the etcd members in the same cluster onto the same node.
 	AntiAffinity bool `json:"antiAffinity,omitempty"`
+
+	// PullPolicy describes a policy for if/when to pull a container image
+	// One of PullAlways, PullNever, PullIfNotPresent.
+	// Defaults to PullAlways if :latest tag is specified, or IfNotPresent otherwise.
+	// More info: https://kubernetes.io/docs/concepts/containers/images#updating-images
+	// This field cannot be updated once the cluster is created.
+	ImagePullPolicy v1.PullPolicy `json:"imagePullPolicy,omitempty"`
 
 	// Resources is the resource requirements for the etcd container.
 	// This field cannot be updated once the cluster is created.
