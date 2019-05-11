@@ -253,6 +253,7 @@ func NewBackupPodTemplate(clusterName, account string, sp spec.ClusterSpec) v1.P
 					Name:  backupenv.ClusterSpec,
 					Value: string(b),
 				}},
+				ImagePullPolicy: v1.PullIfNotPresent,
 			},
 		},
 	}
@@ -354,6 +355,7 @@ func CopyVolume(kubecli kubernetes.Interface, fromClusterName, toClusterName, ns
 						Name:      "to-dir",
 						MountPath: constants.BackupMountDir,
 					}},
+					ImagePullPolicy: v1.PullIfNotPresent,
 				},
 			},
 			RestartPolicy: v1.RestartPolicyNever,

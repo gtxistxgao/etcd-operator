@@ -40,6 +40,7 @@ func etcdContainer(commands, baseImage, version string) v1.Container {
 		Command: []string{"/bin/sh", "-ec", commands},
 		Name:    "etcd",
 		Image:   ImageName(baseImage, version),
+		ImagePullPolicy: v1.PullIfNotPresent,
 		Ports: []v1.ContainerPort{
 			{
 				Name:          "server",
@@ -152,6 +153,7 @@ func applyPodPolicy(clusterName string, pod *v1.Pod, policy *spec.PodPolicy) {
 	for i := range pod.Spec.Containers {
 		if pod.Spec.Containers[i].Name == "etcd" {
 			pod.Spec.Containers[i].Env = append(pod.Spec.Containers[i].Env, policy.EtcdEnv...)
+			pod.Spec.Containers[i].ImagePullPolicy = v1.PullIfNotPresent
 		}
 	}
 }

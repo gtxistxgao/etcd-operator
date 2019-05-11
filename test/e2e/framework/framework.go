@@ -119,7 +119,7 @@ func (f *Framework) SetupEtcdOperator() error {
 				{
 					Name:            "etcd-operator",
 					Image:           f.opImage,
-					ImagePullPolicy: v1.PullAlways,
+					ImagePullPolicy: v1.PullIfNotPresent,
 					Command:         cmd,
 					Env: []v1.EnvVar{
 						{

@@ -111,6 +111,7 @@ func startEtcd(f *framework.Framework) (*v1.Pod, error) {
 				Command: []string{"/bin/sh", "-ec", etcdCmd},
 				Name:    "etcd",
 				Image:   "quay.io/coreos/etcd:v3.1.8",
+				ImagePullPolicy: v1.PullIfNotPresent,
 				Env: []v1.EnvVar{{
 					Name:      "POD_NAME",
 					ValueFrom: &v1.EnvVarSource{FieldRef: &v1.ObjectFieldSelector{FieldPath: "metadata.name"}},
@@ -188,6 +189,7 @@ func cleanupSelfHostedHostpath() {
 					Containers: []v1.Container{{
 						Name:  name,
 						Image: "busybox",
+						ImagePullPolicy: v1.PullIfNotPresent,
 						VolumeMounts: []v1.VolumeMount{
 							// TODO: This is an assumption on etcd container volume mount.
 							{Name: "etcd-data", MountPath: "/var/etcd"},

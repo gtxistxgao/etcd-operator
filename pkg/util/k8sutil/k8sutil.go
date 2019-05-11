@@ -95,8 +95,9 @@ func makeRestoreInitContainerSpec(backupAddr, token, baseImage, curlImage, versi
 
 	return []v1.Container{
 		{
-			Name:  "fetch-backup",
-			Image: image,
+			Name:            "fetch-backup",
+			Image:           image,
+			ImagePullPolicy: v1.PullIfNotPresent,
 			Command: []string{
 				"/bin/sh", "-ec",
 				fmt.Sprintf("curl -o %s %s", backupFile, backupapi.NewBackupURL("http", backupAddr, version, -1)),
@@ -104,8 +105,9 @@ func makeRestoreInitContainerSpec(backupAddr, token, baseImage, curlImage, versi
 			VolumeMounts: etcdVolumeMounts(),
 		},
 		{
-			Name:  "restore-datadir",
-			Image: ImageName(baseImage, version),
+			Name:            "restore-datadir",
+			Image:           ImageName(baseImage, version),
+			ImagePullPolicy: v1.PullIfNotPresent,
 			Command: []string{
 				"/bin/sh", "-ec",
 				fmt.Sprintf("ETCDCTL_API=3 etcdctl snapshot restore %[1]s"+
