@@ -29,7 +29,7 @@ import (
 	"github.com/coreos/etcd-operator/pkg/util/retryutil"
 
 	appsv1beta1 "k8s.io/api/apps/v1beta1"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -87,7 +87,7 @@ func HostPathFromMember(hp, memberName, namespace string) string {
 	return path.Join(hp, namespace, memberName)
 }
 
-func makeRestoreInitContainerSpec(backupAddr, token, baseImage, curlImage, version string, m *etcdutil.Member) []v1.Container {
+func makeRestoreInitContainerSpec(backupAddr, token, baseImage, curlImage, version string, pullPolicy v1.PullPolicy, m *etcdutil.Member) []v1.Container {
 	image := defaultCurlImage
 	if curlImage != "" {
 		image = curlImage
@@ -95,8 +95,9 @@ func makeRestoreInitContainerSpec(backupAddr, token, baseImage, curlImage, versi
 
 	return []v1.Container{
 		{
-			Name:  "fetch-backup",
-			Image: image,
+			Name:            "fetch-backup",
+			Image:           image,
+			ImagePullPolicy: pullPolicy,
 			Command: []string{
 				"/bin/sh", "-ec",
 				fmt.Sprintf("curl -o %s %s", backupFile, backupapi.NewBackupURL("http", backupAddr, version, -1)),
@@ -104,8 +105,9 @@ func makeRestoreInitContainerSpec(backupAddr, token, baseImage, curlImage, versi
 			VolumeMounts: etcdVolumeMounts(),
 		},
 		{
-			Name:  "restore-datadir",
-			Image: ImageName(baseImage, version),
+			Name:            "restore-datadir",
+			Image:           ImageName(baseImage, version),
+			ImagePullPolicy: pullPolicy,
 			Command: []string{
 				"/bin/sh", "-ec",
 				fmt.Sprintf("ETCDCTL_API=3 etcdctl snapshot restore %[1]s"+
