@@ -29,7 +29,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/sirupsen/logrus"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes"
@@ -119,7 +119,7 @@ func (f *Framework) SetupEtcdOperator() error {
 				{
 					Name:            "etcd-operator",
 					Image:           f.opImage,
-					ImagePullPolicy: v1.PullAlways,
+					ImagePullPolicy: v1.PullIfNotPresent,
 					Command:         cmd,
 					Env: []v1.EnvVar{
 						{

@@ -26,7 +26,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	appsv1beta1 "k8s.io/api/apps/v1beta1"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -100,7 +100,7 @@ func (f *Framework) CreateOperator(name string) error {
 					Containers: []v1.Container{{
 						Name:            name,
 						Image:           image,
-						ImagePullPolicy: v1.PullAlways,
+						ImagePullPolicy: v1.PullIfNotPresent,
 						Command:         cmd,
 						Env: []v1.EnvVar{
 							{
