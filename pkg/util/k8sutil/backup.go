@@ -355,6 +355,7 @@ func CopyVolume(kubecli kubernetes.Interface, fromClusterName, toClusterName, ns
 						Name:      "to-dir",
 						MountPath: constants.BackupMountDir,
 					}},
+					ImagePullPolicy: v1.PullIfNotPresent,
 				},
 			},
 			RestartPolicy: v1.RestartPolicyNever,

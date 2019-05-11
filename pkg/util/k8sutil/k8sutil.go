@@ -244,7 +244,7 @@ func AddEtcdVolumeToPod(pod *v1.Pod, pvc *v1.PersistentVolumeClaim, hostPath *v1
 
 func AddRecoveryToPod(pod *v1.Pod, clusterName, token string, m *etcdutil.Member, cs spec.ClusterSpec) {
 	pod.Spec.InitContainers =
-		makeRestoreInitContainerSpec(BackupServiceAddr(clusterName), token, cs.BaseImage, cs.CurlImage, cs.Version, m)
+		makeRestoreInitContainerSpec(BackupServiceAddr(clusterName), token, cs.BaseImage, cs.CurlImage, cs.Version, cs.Pod.ImagePullPolicy, m)
 }
 
 func addOwnerRefToObject(o metav1.Object, r metav1.OwnerReference) {
